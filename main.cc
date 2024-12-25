@@ -33,6 +33,15 @@ using json = nlohmann::json;
 // client to client check hop  //
 // ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ //
 
+// _____________________________ //
+// ========== Missing ========== //
+// TCP                           //
+// through put                   //
+// Traffic distance              //
+// energy                        //
+// disconnect                    //
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ //
+
 void
 setupLogging()
 {
