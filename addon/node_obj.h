@@ -90,7 +90,7 @@ class NodeOBJ
         InetSocketAddress remoteAddress = InetSocketAddress(destAddress.ip, destAddress.port);
         senderSocket->Connect(remoteAddress);
         senderSocket->Send(packet);
-        // SendLog(sourceNode, destAddress, comment);
+        SendLog(sourceNode, destAddress, comment);
     }
 
     void displayJson(const string& name, const json& data)

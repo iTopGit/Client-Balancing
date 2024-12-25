@@ -175,7 +175,7 @@ main(int argc, char* argv[])
 
     setupLogging();
 
-    // debug = true;
+    debug = true;
 
     if (debug)
     {
