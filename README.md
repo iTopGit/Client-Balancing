@@ -1,4 +1,7 @@
 # Client-Balancing
 NS-3.42. Balancing communication between client and server with leader client.
-[]![fig 1](images/Figure_1.png)
-[]![fig 2](images/Figure_1.png)
+
+<p align="center">
+  <img src="images/Figure_1.png" alt="Image 1" width="300"/>
+  <img src="images/Figure_2.png" alt="Image 2" width="300"/>
+</p>
