@@ -24,10 +24,28 @@ startServer(NodeContainer server)
 void
 startClient(NodeContainer clients)
 {
-    c1 = new ClientOBJ(clients.Get(0));
-    c2 = new ClientOBJ(clients.Get(1));
-    c3 = new ClientOBJ(clients.Get(2));
-    c4 = new ClientOBJ(clients.Get(3));
+    if (g_n_client == 1)
+    {
+        c1 = new ClientOBJ(clients.Get(0));
+    }
+    else if (g_n_client == 2)
+    {
+        c1 = new ClientOBJ(clients.Get(0));
+        c2 = new ClientOBJ(clients.Get(1));
+    }
+    else if (g_n_client == 3)
+    {
+        c1 = new ClientOBJ(clients.Get(0));
+        c2 = new ClientOBJ(clients.Get(1));
+        c3 = new ClientOBJ(clients.Get(2));
+    }
+    else if (g_n_client == 4)
+    {
+        c1 = new ClientOBJ(clients.Get(0));
+        c2 = new ClientOBJ(clients.Get(1));
+        c3 = new ClientOBJ(clients.Get(2));
+        c4 = new ClientOBJ(clients.Get(3));
+    }
 }
 
 void
@@ -44,13 +62,21 @@ ImplementApp(vector<NodeContainer> nodes)
     {
         Simulator::Schedule(MilliSeconds(10), [i]() {
             if (i == 1)
+            {
                 c1->connect();
+            }
             else if (i == 2)
+            {
                 c2->connect();
+            }
             else if (i == 3)
+            {
                 c3->connect();
+            }
             else if (i == 4)
+            {
                 c4->connect();
+            }
         });
     }
 

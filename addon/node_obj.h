@@ -1,10 +1,10 @@
 #ifndef NODE_OBJ_H
 #define NODE_OBJ_H
 
+#include "global_values.h"
+
 #include <iomanip>
 #include <iostream>
-
-#include "global_values.h"
 
 using json = nlohmann::json;
 
@@ -34,6 +34,7 @@ class NodeOBJ
     Ptr<Packet> CreateJSONPacket(json input)
     {
         string jsonString = input.dump();
+        jsonString += "\n"; // Append delimiter to mark end of JSON message
         const uint8_t* dataByte = reinterpret_cast<const uint8_t*>(jsonString.c_str());
         uint32_t dataSize = jsonString.size();
         Ptr<Packet> packet = Create<Packet>(dataByte, dataSize);
@@ -65,6 +66,8 @@ class NodeOBJ
         }
     };
 
+    InetSocketAddress emptyAddress = InetSocketAddress(Ipv4Address::GetAny(), 0);
+
     string convIPtoString(Ipv4Address conv_ip)
     {
         ostringstream oss;
@@ -80,18 +83,59 @@ class NodeOBJ
         return senderIp;
     }
 
-    void SocketSend(Ptr<Node> sourceNode,
-                    addressInfo destAddress,
-                    Ptr<Packet> packet,
-                    string comment = "")
+    void SocketSend(Ptr<Socket> socket,
+                    InetSocketAddress destAddress = InetSocketAddress(Ipv4Address::GetAny(), 0),
+                    Ptr<Packet> packet = nullptr,
+                    const string& comment = "")
     {
-        Ptr<Socket> senderSocket =
-            Socket::CreateSocket(sourceNode, TypeId::LookupByName("ns3::UdpSocketFactory"));
-        InetSocketAddress remoteAddress = InetSocketAddress(destAddress.ip, destAddress.port);
-        senderSocket->Connect(remoteAddress);
-        senderSocket->Send(packet);
-        SendLog(sourceNode, destAddress, comment);
+        if (socket == nullptr || packet == nullptr)
+        {
+            slog("Socket or packet is null, unable to send data.");
+            return;
+        }
+
+        if (g_protocol == "TCP")
+        {
+            socket->Send(packet);
+
+            Address peerAddress;
+            socket->GetPeerName(peerAddress);
+            destAddress = InetSocketAddress::ConvertFrom(peerAddress);
+        }
+        else if (g_protocol == "UDP")
+        {
+            // For UDP, send using the specified destination address
+            if (destAddress.GetIpv4() == Ipv4Address::GetAny() || destAddress.GetPort() == 0)
+            {
+                slog("Destination address is missing for UDP, unable to send data.");
+                return;
+            }
+            socket->SendTo(packet, 0, destAddress);
+        }
+        SendLog(destAddress.GetIpv4(), comment);
     }
+
+    // void SocketSend(Ptr<Node> sourceNode,
+    //                 addressInfo destAddress,
+    //                 Ptr<Packet> packet,
+    //                 string comment = "")
+    // {
+    //     Ptr<Socket> senderSocket;
+    //     if (g_protocol == "TCP")
+    //     {
+    //         senderSocket =
+    //             Socket::CreateSocket(sourceNode, TypeId::LookupByName("ns3::TcpSocketFactory"));
+    //     }
+    //     else if (g_protocol == "UDP")
+    //     {
+    //         senderSocket =
+    //             Socket::CreateSocket(sourceNode, TypeId::LookupByName("ns3::UdpSocketFactory"));
+    //     }
+    //     InetSocketAddress remoteAddress = InetSocketAddress(destAddress.ip, destAddress.port);
+    //     senderSocket->Connect(remoteAddress);
+    //     senderSocket->Send(packet);
+    //     SendLog(sourceNode, destAddress, comment);
+    // }
 
     void displayJson(const string& name, const json& data)
     {
@@ -167,15 +211,14 @@ class NodeOBJ
                                         {Ipv4Address("192.168.4.2"), "Client 3"},
                                         {Ipv4Address("192.168.5.2"), "Client 4"}};
 
-    void SendLog(Ptr<Node> src_node, addressInfo dest_sock, string comment)
+    void SendLog(Ipv4Address dest_ip, string comment)
     {
-        string source = Names::FindName(src_node);
-        if (source == "Server")
+        string text = "Send : " + name;
+        if (name == "Server")
         {
-            source += "  ";
+            text += "  ";
         }
-        string destination = ip_name[dest_sock.ip];
-        string text = "Send : " + source + " >> " + destination;
+        text += " >> " + ip_name[dest_ip];
         if (comment != "")
         {
             text += " ( " + comment + " )";

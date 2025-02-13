@@ -87,7 +87,7 @@ displayResult()
     vec = d_result_time;
     if (debug) // show data
     {
-        cout << "Computational Time : \n";
+        cout << "Computational TimeX : \n";
         copy(vec.begin(), vec.end(), ostream_iterator<double>(cout, " "));
         cout << endl;
     }
@@ -108,6 +108,8 @@ void
 runSimulation()
 {
     Names::Clear();
+
+    
 
     vector<NodeContainer> nodes = configSimulator();
     ImplementApp(nodes);
@@ -175,13 +177,16 @@ main(int argc, char* argv[])
 
     setupLogging();
 
-    debug = true;
-
     if (debug)
     {
         g_send_type = "balance";
+        // g_send_type = "basic";
+
         g_subnet = true;
+
+        // g_protocol = "TCP";
         g_protocol = "UDP";
+
         g_n_client = 4;
 
         runSimulation();

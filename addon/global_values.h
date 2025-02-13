@@ -3,7 +3,7 @@
 
 int g_value = 99;
 
-bool debug = false;
+bool debug = true;
 
 // Data
 vector<double> d_computational_time;
