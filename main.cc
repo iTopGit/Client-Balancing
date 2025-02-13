@@ -25,6 +25,7 @@ using json = nlohmann::json;
 #include "addon/implement_app.h"
 #include "addon/json_manager.h"
 #include "addon/node_obj.h"
+#include "addon/result.h"
 #include "addon/server.h"
 #include "uncleane.h"
 
@@ -35,7 +36,6 @@ using json = nlohmann::json;
 
 // _____________________________ //
 // ========== Missing ========== //
-// TCP                           //
 // through put                   //
 // Traffic distance              //
 // energy                        //
@@ -67,49 +67,9 @@ configSimulator()
 }
 
 void
-displayResult()
-{
-    string parameter = g_send_type + ", " + g_subnet + ", " + g_protocol + ", " + g_distance +
-                       ", " + to_string(g_n_client);
-    cout << "Simulation : \n" << parameter << endl;
-
-    vector<double> vec;
-
-    vec = d_computational_time;
-    if (debug) // show data
-    {
-        cout << "Computational Time : \n";
-        copy(vec.begin(), vec.end(), ostream_iterator<double>(cout, " "));
-        cout << endl;
-    }
-    r_computational_time = accumulate(vec.begin(), vec.end(), 0.0) / vec.size();
-
-    vec = d_result_time;
-    if (debug) // show data
-    {
-        cout << "Computational TimeX : \n";
-        copy(vec.begin(), vec.end(), ostream_iterator<double>(cout, " "));
-        cout << endl;
-    }
-    r_result_time = accumulate(vec.begin(), vec.end(), 0.0) / vec.size();
-
-    cout << "Average Computational Time : " << r_computational_time << endl;
-    cout << "Average Result Time : " << r_result_time << endl;
-}
-
-void
-resetResult()
-{
-    d_computational_time.clear();
-    d_result_time.clear();
-}
-
-void
 runSimulation()
 {
     Names::Clear();
-
-    
 
     vector<NodeContainer> nodes = configSimulator();
     ImplementApp(nodes);
@@ -138,16 +98,12 @@ fullSimulation(int round = 1)
         {
             for (auto protocol : protocol_values)
             {
-                if (protocol == "TCP")
-                {
-                    continue;
-                }
                 for (auto distance : distance_values)
                 {
                     if (distance == "traffic")
-                {
-                    continue;
-                }
+                    {
+                        continue;
+                    }
                     for (auto n_client : n_client_values)
                     {
                         for (int i = 0; i < round; i++)
@@ -160,9 +116,21 @@ fullSimulation(int round = 1)
 
                             runSimulation();
                         }
-                        displayResult();
+                        // displayResult();
+                        computeStatistics();
+                        std::tuple<int, double, double, double, double> one_config =
+                            std::make_tuple(n_client,
+                                            avg_compute_time,
+                                            med_compute_time,
+                                            avg_result_time,
+                                            med_result_time);
+                        results.push_back(one_config);
                         resetResult();
                     }
+                    // displayStoredResult();
+                    string file_name = send_type + "_" + subnet + "_" + protocol + "_" + distance;
+                    saveResultsToCSV(file_name, results);
+                    results.clear();
                 }
             }
         }
@@ -179,8 +147,8 @@ main(int argc, char* argv[])
 
     if (debug)
     {
-        g_send_type = "balance";
-        // g_send_type = "basic";
+        // g_send_type = "balance";
+        g_send_type = "basic";
 
         g_subnet = true;
 
@@ -193,7 +161,7 @@ main(int argc, char* argv[])
     }
     else
     {
-        int round = 10;
+        int round = 100;
         fullSimulation(round);
     }
     return 0;

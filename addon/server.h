@@ -234,10 +234,10 @@ class ServerOBJ : public NodeOBJ
         {
             addMember(sender_ip, data["Body"]);
         }
-        // else if (tag == "result")
-        // {
-        //     combineResult(data["Body"]);
-        // }
+        else if (tag == "result")
+        {
+            combineResult(data["Body"]);
+        }
     }
 
     void createConnection(Ipv4Address sender_ip)
@@ -455,6 +455,15 @@ class ServerOBJ : public NodeOBJ
             slog(result);
             resultTimer.stop();
             d_result_time.push_back(resultTimer.getElapsedTime());
+            // printVector(d_result_time);
+        }
+
+        void printVector(const std::vector<double>& vec) {
+            std::cout << "Vector: ";
+            for (const auto& val : vec) {
+                std::cout << val << " ";
+            }
+            std::cout << std::endl;
         }
 };
 

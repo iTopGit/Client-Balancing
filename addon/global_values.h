@@ -3,15 +3,19 @@
 
 int g_value = 99;
 
-bool debug = true;
+// bool debug = true;
+bool debug = false;
 
 // Data
 vector<double> d_computational_time;
 vector<double> d_result_time;
 
 // Results
-double r_computational_time;
-double r_result_time;
+double avg_compute_time;
+double avg_result_time;
+double med_compute_time;
+double med_result_time;
+vector<std::tuple<int, double, double, double, double>> results;
 
 // Parameters
 
