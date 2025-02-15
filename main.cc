@@ -152,7 +152,7 @@ main(int argc, char* argv[])
     }
     else
     {
-        int round = 1;
+        int round = 100;
         fullSimulation(round);
     }
     return 0;
