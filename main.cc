@@ -9,6 +9,8 @@
 #include "ns3/node-container.h"
 #include "ns3/point-to-point-module.h"
 #include "ns3/socket.h"
+#include "ns3/flow-monitor-module.h"
+
 
 #include <map>
 #include <nlohmann/json.hpp>
@@ -29,16 +31,8 @@ using json = nlohmann::json;
 #include "addon/server.h"
 #include "uncleane.h"
 
-// ___________________________ //
-// ========== ERROR ========== //
-// client to client check hop  //
-// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ //
-
 // _____________________________ //
 // ========== Missing ========== //
-// through put                   //
-// Traffic distance              //
-// energy                        //
 // disconnect                    //
 // ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ //
 
@@ -100,10 +94,8 @@ fullSimulation(int round = 1)
             {
                 for (auto distance : distance_values)
                 {
-                    if (distance == "traffic")
-                    {
-                        continue;
-                    }
+                    string file_name = send_type + "_" + subnet + "_" + protocol + "_" + distance;
+                    cout << "Simulating : " << file_name << endl;
                     for (auto n_client : n_client_values)
                     {
                         for (int i = 0; i < round; i++)
@@ -128,7 +120,6 @@ fullSimulation(int round = 1)
                         resetResult();
                     }
                     // displayStoredResult();
-                    string file_name = send_type + "_" + subnet + "_" + protocol + "_" + distance;
                     saveResultsToCSV(file_name, results);
                     results.clear();
                 }
@@ -150,7 +141,7 @@ main(int argc, char* argv[])
         // g_send_type = "balance";
         g_send_type = "basic";
 
-        g_subnet = true;
+        g_subnet = "same";
 
         // g_protocol = "TCP";
         g_protocol = "UDP";
@@ -161,7 +152,7 @@ main(int argc, char* argv[])
     }
     else
     {
-        int round = 100;
+        int round = 1;
         fullSimulation(round);
     }
     return 0;

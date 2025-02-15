@@ -196,6 +196,8 @@ class ServerOBJ : public NodeOBJ
     void serverSocketSend(json data, Ipv4Address ip, const string& comment)
     {
         Ptr<Packet> packet = CreateJSONPacket(data);
+        uint32_t packetSize = packet->GetSize();
+        slog(to_string(packetSize) + " bytes to " + convIPtoString(ip));
 
         if (g_protocol == "TCP")
         {
@@ -252,12 +254,12 @@ class ServerOBJ : public NodeOBJ
         }
         else // Ack available Group
         {
-            json data = {{"Tag", "leaders"}, {"Body", json::array()}};
+            json leader_data = {{"Tag", "check distance"}, {"Body", json::array()}};
             for (auto it = group.begin(); it != group.end(); ++it)
             {
-                data["Body"].push_back(it.key());
+                leader_data["Body"].push_back(it.key());
             }
-            // addressInfo address(sender_ip, 49152);
+            json data = {{"Tag", "leaders"}, {"Body", leader_data}};
             serverSocketSend(data, sender_ip, "leaders");
         }
     }
