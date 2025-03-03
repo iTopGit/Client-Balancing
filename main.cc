@@ -136,12 +136,14 @@ main(int argc, char* argv[])
 
     setupLogging();
 
+    // basic 3874 bytes
+
     if (debug)
     {
-        // g_send_type = "balance";
-        g_send_type = "basic";
+        g_send_type = "balance";
+        // g_send_type = "basic";
 
-        g_subnet = "same";
+        g_subnet = "diff";
 
         // g_protocol = "TCP";
         g_protocol = "UDP";
@@ -149,33 +151,46 @@ main(int argc, char* argv[])
         g_n_client = 4;
 
         runSimulation();
+    } else if (nRound)
+    {
+        g_send_type = "balance"; // 38064, 6344, 634
+        // g_send_type = "basic"; // 63259, 10543, 1054
+
+        g_subnet = "diff";
+
+        // g_protocol = "TCP";
+        g_protocol = "UDP";
+
+        g_n_client = 4;
+        runSimulation();
+        cout << to_string(r_num) << endl;
     }
     else
     {
-        int round = 100;
+        int round = 1000;
         fullSimulation(round);
     }
     return 0;
 }
 
-void
-animInt(string path, vector<NodeContainer> nodes)
-{
-    AnimationInterface anim(path + "output.xml");
-    NodeContainer server_nodes = nodes[0];
-    NodeContainer client_nodes = nodes[1];
+// void
+// animInt(string path, vector<NodeContainer> nodes)
+// {
+//     AnimationInterface anim(path + "output.xml");
+//     NodeContainer server_nodes = nodes[0];
+//     NodeContainer client_nodes = nodes[1];
 
-    anim.UpdateNodeDescription(server_nodes.Get(0), "Server");
-    anim.UpdateNodeColor(server_nodes.Get(0), 255, 0, 0);      // Red
-    anim.SetConstantPosition(server_nodes.Get(0), 10.0, 10.0); // Position for server node
+//     anim.UpdateNodeDescription(server_nodes.Get(0), "Server");
+//     anim.UpdateNodeColor(server_nodes.Get(0), 255, 0, 0);      // Red
+//     anim.SetConstantPosition(server_nodes.Get(0), 10.0, 10.0); // Position for server node
 
-    for (uint32_t i = 0; i < client_nodes.GetN(); ++i)
-    {
-        string name = "Client " + to_string(i + 1);
-        anim.UpdateNodeDescription(client_nodes.Get(i), name);
-        anim.UpdateNodeColor(client_nodes.Get(i), 0, 255, 0); // Green
-        anim.SetConstantPosition(client_nodes.Get(i), 20.0 + i * 5.0, 20.0);
-    }
-}
+//     for (uint32_t i = 0; i < client_nodes.GetN(); ++i)
+//     {
+//         string name = "Client " + to_string(i + 1);
+//         anim.UpdateNodeDescription(client_nodes.Get(i), name);
+//         anim.UpdateNodeColor(client_nodes.Get(i), 0, 255, 0); // Green
+//         anim.SetConstantPosition(client_nodes.Get(i), 20.0 + i * 5.0, 20.0);
+//     }
+// }
 
 // animInt("/home/ntk/workspace/ns-allinone-3.42/ns-3.42/scratch/project/", nodes);

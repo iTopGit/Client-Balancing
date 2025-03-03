@@ -33,19 +33,27 @@ def create_graph(title, subnet, protocol, distance, col_name):
     filename = title + ".png"
     plt.savefig(os.path.join(save_path, filename), format='png', dpi=300)
     plt.close()  # Close the figure to free memory
+    print(title)
 
 subnets = ["diff", "same"]
 protocols = ["TCP", "UDP"]
 distances = ["hop", "traffic"]
-time = ["avg_compute_time", "avg_result_time", "med_compute_time", "med_result_time"]
+# time = ["avg_compute_time", "avg_result_time", "med_compute_time", "med_result_time"]
+time = ["avg_compute_time", "avg_result_time"]
 
-for subnet in subnets:
-    for protocol in protocols:
-        for distance in distances:
-            if distance == "traffic":
-                continue
-            for t in time:
-                filename = f"{subnet}_{protocol}_{distance}_{t}"
-                print(filename)
-                create_graph(filename, subnet, protocol, distance, t)
+def create_all_graphs():
+    for subnet in subnets:
+        for protocol in protocols:
+            for distance in distances:
+                for t in time:
+                    filename = f"{subnet}_{protocol}_{distance}_{t}"
+                    create_graph(filename, subnet, protocol, distance, t)
+                    
+create_all_graphs()
 
+# # same subnet
+# create_graph("Avg compute time in same subnet on UDP", "same", "UDP", "hop", "avg_compute_time")
+# create_graph("Avg result time in same subnet on UDP", "same", "UDP", "hop", "avg_result_time")
+# # diff subnet
+# create_graph("Avg compute time in diff subnet on UDP", "diff", "UDP", "hop", "avg_compute_time")
+# create_graph("Avg result time in diff subnet on UDP", "diff", "UDP", "hop", "avg_result_time")

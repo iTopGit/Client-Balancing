@@ -80,7 +80,12 @@ ImplementApp(vector<NodeContainer> nodes)
         });
     }
 
-    Simulator::Schedule(MilliSeconds(100), []() { s->sendMatrix(); });
+    Simulator::Schedule(MilliSeconds(100), []() { 
+        s->sendMatrix(); 
+        if ((!debug) and nRound) {
+            Simulator::Schedule(Seconds(1), []() { Simulator::Stop(); });
+        }
+    });
 }
 
 #endif // IMPLEMENT_APP_H

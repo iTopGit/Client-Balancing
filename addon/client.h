@@ -284,6 +284,11 @@ class ClientOBJ : public NodeOBJ
         else
         {
             distance = static_cast<int>(throughput);
+            if (debug)
+            {
+                string text = (this->name) + ", Throughput: " + to_string(distance) + " Mbps";
+                slog(text);
+            }
         }
         json data2 = {{"Tag", "return distance"}, {"Body", to_string(distance)}};
         json data = {{"Tag", "leaders"}, {"Body", data2}};

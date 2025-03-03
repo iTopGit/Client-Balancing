@@ -43,6 +43,8 @@ class ServerOBJ : public NodeOBJ
         json allTask = createTask(group_leader);
         clearResult(group_leader);
 
+        uint32_t totalPacketSize = 0;
+
         if (g_send_type == "balance")
         {
             json data = {{"Tag", "matrix"}};
@@ -50,6 +52,10 @@ class ServerOBJ : public NodeOBJ
             data["Body"]["Task"] = allTask;
             Ipv4Address destination = Ipv4Address(group_leader.c_str());
             serverSocketSend(data, destination, "matrix");
+            Ptr<Packet> packet = CreateJSONPacket(data);
+            totalPacketSize = packet->GetSize();
+            slog("Size of balance packet: " + std::to_string(packet->GetSize()) + " bytes");
+            
         }
         else // Basic
         {
@@ -60,13 +66,17 @@ class ServerOBJ : public NodeOBJ
                 json task = {{key, value}};
                 data["Body"]["Group"] = group_leader;
                 data["Body"]["Task"] = task;
-                // displayJson("data", data);
                 Ipv4Address destination = Ipv4Address(key.c_str());
                 serverSocketSend(data, destination, "matrix");
+                Ptr<Packet> packet = CreateJSONPacket(data);
+                totalPacketSize += packet->GetSize();
             }
+            slog("Total size of all basic packets: " + std::to_string(totalPacketSize) + " bytes");
+
         }
         processingTimer.stop();
         d_computational_time.push_back(processingTimer.getElapsedTime());
+        d_packet_size.push_back(totalPacketSize);
     }
 
   private:
@@ -241,6 +251,10 @@ class ServerOBJ : public NodeOBJ
         {
             combineResult(data["Body"]);
         }
+        if (tag == "disconnected")
+        {
+            // disconnect(sender_ip);
+        }
     }
 
     void createConnection(Ipv4Address sender_ip)
@@ -309,6 +323,7 @@ class ServerOBJ : public NodeOBJ
     string minTrafficIP()
     {
         slog("WIP : minTrafficIP() (Server.h)");
+        slog("      for client > 4");
         return group.begin().key();
     }
 
@@ -459,6 +474,12 @@ class ServerOBJ : public NodeOBJ
         resultTimer.stop();
         d_result_time.push_back(resultTimer.getElapsedTime());
         // printVector(d_result_time);
+        if (nRound)
+        {
+            r_num++;
+            cout << "r_num: "<< r_num << endl;
+            this->sendMatrix();
+        }
     }
 
     void printVector(const std::vector<double>& vec)

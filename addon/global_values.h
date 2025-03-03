@@ -6,16 +6,23 @@ int g_value = 99;
 // bool debug = true;
 bool debug = false;
 
+// bool nRound = true;
+bool nRound = false;
+
 // Data
 vector<double> d_computational_time;
 vector<double> d_result_time;
+vector<uint32_t> d_packet_size;
 
 // Results
 double avg_compute_time;
 double avg_result_time;
+double avg_packet_size;
 double med_compute_time;
 double med_result_time;
+double med_packet_size;
 vector<std::tuple<int, double, double, double, double>> results;
+int r_num = 0;
 
 // Parameters
 

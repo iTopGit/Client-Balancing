@@ -45,6 +45,24 @@ computeStatistics()
                 ? (sortedData[sortedData.size() / 2 - 1] + sortedData[sortedData.size() / 2]) / 2.0
                 : sortedData[sortedData.size() / 2];
     }
+
+    // Packet Size
+    if (!d_packet_size.empty())
+    {
+        avg_packet_size =
+            accumulate(d_packet_size.begin(), d_packet_size.end(), 0.0) / d_packet_size.size();
+
+        vector<uint32_t> sortedData = d_packet_size;
+        sort(sortedData.begin(), sortedData.end());
+
+        med_packet_size =
+            sortedData.size() % 2 == 0
+                ? (sortedData[sortedData.size() / 2 - 1] + sortedData[sortedData.size() / 2]) / 2.0
+                : sortedData[sortedData.size() / 2];
+    }
+    if (debug) {
+        cout << "avg_packet_size: " << avg_packet_size << endl;
+    }
 }
 
 void
