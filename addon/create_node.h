@@ -33,6 +33,11 @@ CreateNode(NodeContainer& server_nodes,
 
     client_nodes.Create(4);
 
+    if (server_nodes.GetN() == 0 || client_nodes.GetN() == 0 || 
+        switch_nodes.GetN() == 0 || router_nodes.GetN() == 0) {
+        std::cerr << "Error: Nodes failed to initialize in CreateNode()!" << std::endl;
+    }
+
     Names::Add("Server", server_nodes.Get(0));
     AddNodeName("Switch", switch_nodes);
     Names::Add("Router", router_nodes.Get(0));

@@ -2,6 +2,7 @@
 #include "ns3/bridge-module.h"
 #include "ns3/core-module.h"
 #include "ns3/csma-module.h"
+#include "ns3/flow-monitor-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/log.h"
 #include "ns3/netanim-module.h"
@@ -9,8 +10,6 @@
 #include "ns3/node-container.h"
 #include "ns3/point-to-point-module.h"
 #include "ns3/socket.h"
-#include "ns3/flow-monitor-module.h"
-
 
 #include <map>
 #include <nlohmann/json.hpp>
@@ -68,7 +67,53 @@ runSimulation()
     vector<NodeContainer> nodes = configSimulator();
     ImplementApp(nodes);
 
+    // Install FlowMonitor
+    FlowMonitorHelper flowHelper;
+    Ptr<FlowMonitor> flowMonitor = flowHelper.InstallAll();
+
+    Simulator::Stop(Seconds(10)); // Ensure simulation stops at some point
+
     Simulator::Run();
+
+    if (!flowMonitor)
+    {
+        std::cerr << "Error: FlowMonitor is NULL!" << std::endl;
+        return;
+    }
+
+    flowMonitor->CheckForLostPackets();
+
+    Ptr<Ipv4FlowClassifier> classifier =
+        DynamicCast<Ipv4FlowClassifier>(flowHelper.GetClassifier());
+    if (!classifier)
+    {
+        std::cerr << "Error: FlowClassifier is NULL!" << std::endl;
+        return;
+    }
+
+    FlowMonitor::FlowStatsContainer stats = flowMonitor->GetFlowStats();
+    for (auto& stat : stats)
+    {
+        Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow(stat.first);
+
+        int lostPackets = stat.second.txPackets - stat.second.rxPackets;
+
+        if (lostPackets > 0)
+        {
+            g_packet_loss_count += lostPackets;
+        }
+
+        if (debug)
+        {
+            std::cout << "Flow ID: " << stat.first << " Source Address: " << t.sourceAddress
+                      << " Destination Address: " << t.destinationAddress << std::endl;
+            // std::cout << "Tx Packets: " << stat.second.txPackets << std::endl;
+            // std::cout << "Rx Packets: " << stat.second.rxPackets << std::endl;
+            std::cout << "Lost Packets: " << (stat.second.txPackets - stat.second.rxPackets)
+                      << std::endl;
+        }
+    }
+
     Simulator::Destroy();
 
     if (debug)
@@ -98,6 +143,8 @@ fullSimulation(int round = 1)
                     cout << "Simulating : " << file_name << endl;
                     for (auto n_client : n_client_values)
                     {
+                        g_packet_loss_count = 0;  // Reset packet loss before each configuration
+
                         for (int i = 0; i < round; i++)
                         {
                             g_send_type = send_type;
@@ -106,21 +153,26 @@ fullSimulation(int round = 1)
                             g_distance = distance;
                             g_n_client = n_client;
 
+                            g_packet_loss_count = 0; // Reset before each round
                             runSimulation();
+                            d_packet_loss.push_back(g_packet_loss_count); // Store packet loss
                         }
                         // displayResult();
                         computeStatistics();
-                        std::tuple<int, double, double, double, double> one_config =
+                        std::tuple<int, double, double, double, double, double, double> one_config =
                             std::make_tuple(n_client,
                                             avg_compute_time,
                                             med_compute_time,
                                             avg_result_time,
-                                            med_result_time);
+                                            med_result_time,
+                                            avg_packet_loss,
+                                            avg_packet_size);
                         results.push_back(one_config);
                         resetResult();
                     }
                     // displayStoredResult();
                     saveResultsToCSV(file_name, results);
+
                     results.clear();
                 }
             }
@@ -151,15 +203,21 @@ main(int argc, char* argv[])
         g_n_client = 4;
 
         runSimulation();
-    } else if (nRound)
+    }
+    else if (nRound)
     {
-        g_send_type = "balance"; // 38064, 6344, 634
         // g_send_type = "basic"; // 63259, 10543, 1054
+        g_send_type = "balance"; // 38064, 6344, 634
+        
 
-        g_subnet = "diff";
+        g_subnet = "same";
+        // g_subnet = "diff";
+        
 
-        // g_protocol = "TCP";
-        g_protocol = "UDP";
+        g_protocol = "TCP";
+        // g_protocol = "UDP";
+
+        g_distance = "hop";
 
         g_n_client = 4;
         runSimulation();

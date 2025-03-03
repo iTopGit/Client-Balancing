@@ -60,8 +60,19 @@ computeStatistics()
                 ? (sortedData[sortedData.size() / 2 - 1] + sortedData[sortedData.size() / 2]) / 2.0
                 : sortedData[sortedData.size() / 2];
     }
-    if (debug) {
-        cout << "avg_packet_size: " << avg_packet_size << endl;
+
+    if (!d_packet_loss.empty())
+    {
+        avg_packet_loss =
+            accumulate(d_packet_loss.begin(), d_packet_loss.end(), 0.0) / d_packet_loss.size();
+
+        vector<int> sortedData = d_packet_loss;
+        sort(sortedData.begin(), sortedData.end());
+
+        med_packet_loss =
+            sortedData.size() % 2 == 0
+                ? (sortedData[sortedData.size() / 2 - 1] + sortedData[sortedData.size() / 2]) / 2.0
+                : sortedData[sortedData.size() / 2];
     }
 }
 
@@ -98,6 +109,8 @@ resetResult()
 {
     d_computational_time.clear();
     d_result_time.clear();
+    d_packet_loss.clear();
+    d_packet_size.clear();
 }
 
 void
@@ -116,8 +129,9 @@ displayStoredResult()
 #include <fstream>
 
 void
-saveResultsToCSV(const std::string& file_name,
-                 const std::vector<std::tuple<int, double, double, double, double>>& results)
+saveResultsToCSV(
+    const std::string& file_name,
+    const std::vector<std::tuple<int, double, double, double, double, double, double>>& results)
 {
     const string path = "scratch/project/saves/";
     std::ofstream file(path + file_name + ".csv");
@@ -129,7 +143,8 @@ saveResultsToCSV(const std::string& file_name,
     }
 
     // Write CSV Header
-    file << "n_nodes,avg_compute_time,med_compute_time,avg_result_time,med_result_time\n";
+    file << "n_nodes,avg_compute_time,med_compute_time,avg_result_time,med_result_time,avg_packet_"
+            "loss,avg_packet_size\n";
 
     // Write all simulation results
     for (const auto& result : results)
@@ -138,7 +153,9 @@ saveResultsToCSV(const std::string& file_name,
              << std::get<1>(result) << ","   // avg_compute_time
              << std::get<2>(result) << ","   // med_compute_time
              << std::get<3>(result) << ","   // avg_result_time
-             << std::get<4>(result) << "\n"; // med_result_time
+             << std::get<4>(result) << ","   // med_result_time
+             << std::get<5>(result) << ","   // avg_packet_loss
+             << std::get<6>(result) << "\n"; // avg_packet_size
     }
 
     file.close();
